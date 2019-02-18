@@ -3,7 +3,8 @@
 #' @param plot_list a named list of plot objects to be written as panels (objects can be trellis, ggplot2, or htmlwidget) with the list names being the keys for the panels
 #' @param pb optional progress bar object to pass in and use to report progress
 #' @param ... params passed directly to \code{\link{write_panel}}
-#' @import progress
+#' @importFrom furrr future_map
+#' @importFrom future multicore plan
 #' @export
 write_panels <- function(plot_list, ..., pb = NULL) {
 
@@ -12,15 +13,10 @@ write_panels <- function(plot_list, ..., pb = NULL) {
     stop_nice("panels must be a named list, with the names being used as the panel key")
   }
 
-  if (is.null(pb))
-    pb <- progress::progress_bar$new(
-      total = length(nms), width = getOption("width") - 5,
-      format = ":what [:bar] :percent :current/:total eta::eta")
-
-  lapply(nms, function(nm) {
-    pb$tick(tokens = list(what = "writing panels      "))
+  plan(multicore)
+  future_map(nms, function(nm) {
     write_panel(plot_list[[nm]], key = nm, ...)
-  })
+  }, .progress = TRUE)
 
   invisible(NULL)
 }

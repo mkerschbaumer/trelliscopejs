@@ -18,6 +18,8 @@ Imports:
     grid,
     htmltools,
     DistributionUtils,
+	furrr,
+	future,
     grDevices,
     gtable,
     digest,
